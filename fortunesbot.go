@@ -143,7 +143,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	contents, _ := ioutil.ReadAll(resp.Body)
+	contents, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println(err)
 	}
