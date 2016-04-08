@@ -14,6 +14,7 @@ import (
 
 const api_token = "API_TOKEN_HERE"
 const api_url = "https://api.telegram.org/bot"
+const debug = 0 // 0 = disable debugging, 1 = enable debugging
 
 type Response struct {
 	Ok          bool   `json:"ok"`
@@ -55,6 +56,9 @@ func get_fortune_cookie() (string, error) {
 	// get fortune cookie and normalize it
 	out, err := exec.Command("fortune").Output()
 	out_string := string(out)
+	if debug == 1 {
+		fmt.Println(out_string)
+	}
 	out_string = strings.Replace(out_string, "\"", "'", -1)
 
 	return out_string, err
@@ -129,6 +133,10 @@ func main() {
 	var botuser UserResponse
 
 	fmt.Println("Starting...")
+
+	if debug == 1 {
+		fmt.Println("Debug Mode activated...")
+	}
 
 	// test if 'fortune' is installed
 	_, err := get_fortune_cookie()
