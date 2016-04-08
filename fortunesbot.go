@@ -51,17 +51,13 @@ type Chat struct {
 	ID int `json:id`
 }
 
-func get_fortune_cookie() string {
+func get_fortune_cookie() (string, error) {
 	// get fortune cookie and normalize it
 	out, err := exec.Command("fortune").Output()
-	if err != nil {
-		fmt.Println("Please install fortune.")
-		fmt.Println(err)
-	}
 	out_string := string(out)
 	out_string = strings.Replace(out_string, "\"", "'", -1)
 
-	return out_string
+	return out_string, err
 }
 
 func loop() {
@@ -90,7 +86,7 @@ func loop() {
 		offset = update.Update[message_start].ID
 	}
 
-	message = get_fortune_cookie()
+	message, _ = get_fortune_cookie()
 	for {
 		var jsonStr_update = []byte(`{"offset":` + strconv.Itoa(offset) + `}`)
 		req, _ := http.NewRequest("POST", url_getUpdates, bytes.NewBuffer(jsonStr_update))
@@ -124,7 +120,7 @@ func loop() {
 			}
 		}
 
-		message = get_fortune_cookie()
+		message, _ = get_fortune_cookie()
 		offset = offset + 1
 	}
 }
@@ -135,17 +131,24 @@ func main() {
 	fmt.Println("Starting...")
 
 	// test if 'fortune' is installed
-	get_fortune_cookie()
+	_, err := get_fortune_cookie()
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Please install 'fortune'")
+		return
+	}
 
 	url := api_url + api_token + "/GetMe"
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	contents, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	json.Unmarshal(contents, &botuser)
