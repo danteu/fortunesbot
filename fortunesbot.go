@@ -14,7 +14,7 @@ import (
 
 const api_token = "API_TOKEN_HERE"
 const api_url = "https://api.telegram.org/bot"
-const debug = 0 // 0 = disable debugging, 1 = enable debugging
+const debug = 1 // 0 = disable debugging, 1 = enable debugging
 
 type Response struct {
 	Ok          bool   `json:"ok"`
@@ -44,6 +44,7 @@ type Update struct {
 
 type Message struct {
 	ID   int    `json:"message_id"`
+	User User   `json:"from"`
 	Text string `json:"text"`
 	Chat Chat   `json:chat`
 }
@@ -57,7 +58,7 @@ func get_fortune_cookie() (string, error) {
 	out, err := exec.Command("fortune").Output()
 	out_string := string(out)
 	if debug == 1 {
-		fmt.Println(out_string)
+		fmt.Println("\n\n======\nPrecomputed fortune:\n" + out_string)
 	}
 	out_string = strings.Replace(out_string, "\"", "'", -1)
 
@@ -114,7 +115,16 @@ func loop() {
 		}
 		chatid = strconv.Itoa(update.Update[0].Message.Chat.ID)
 
+		if debug == 1 {
+			fmt.Println("From User: " + update.Update[0].Message.User.Username)
+			fmt.Println("Chat ID: " + chatid)
+			fmt.Println("Received Message: " + update.Update[0].Message.Text)
+		}
+
 		if strings.Contains(update.Update[0].Message.Text, "/fortune") == true {
+			if debug == 1 {
+				fmt.Println("Sending message...")
+			}
 			var jsonStr_message = []byte(`{"text":"` + message + `", "chat_id":` + chatid + `}`)
 			req, _ = http.NewRequest("POST", url_sendMessage, bytes.NewBuffer(jsonStr_message))
 			req.Header.Set("Content-Type", "application/json")
@@ -122,10 +132,14 @@ func loop() {
 			if err != nil {
 				fmt.Println(err)
 			}
+			if debug == 1 {
+				fmt.Println("Message sent.")
+			}
 		}
 
 		message, _ = get_fortune_cookie()
 		offset = offset + 1
+
 	}
 }
 
@@ -136,9 +150,10 @@ func main() {
 
 	if debug == 1 {
 		fmt.Println("Debug Mode activated...")
+		fmt.Println("Checking fortunes installation...")
 	}
 
-	// test if 'fortune' is installed
+	// check 'fortune' installation
 	_, err := get_fortune_cookie()
 	if err != nil {
 		fmt.Println(err)

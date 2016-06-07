@@ -5,4 +5,4 @@ For some great cookie files use your preferred search engine.
 
 Requires `fortune`.
 
-Running instance can be found at https://telegram.me/fortunesbot.
+Running instance (until uni server reboots) can be found at https://telegram.me/fortunesbot.
